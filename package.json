@@ -12,8 +12,15 @@
     "prebuilds",
     "CMakeLists.txt"
   ],
+  "imports": {
+    "child_process": {
+      "bare": "bare-subprocess",
+      "default": "child_process"
+    }
+  },
   "addon": true,
   "dependencies": {
+    "bare-subprocess": "^5.0.3",
     "require-addon": "^1.1.0",
     "which-runtime": "^1.2.1"
   },

@@ -1,9 +1,8 @@
 const test = require('brittle')
 const sodium = require('..')
-const { isBare, isNode } = require('which-runtime')
-const fork = isNode ? require('child_process').fork : () => { throw new Error('fork() not supported on runtime') }
+const fork = require('child_process').fork
 
-test('sodium_mprotect_noaccess', { skip: isBare }, function (t) {
+test('sodium_mprotect_noaccess', function (t) {
   t.plan(1)
   const p = fork(require.resolve('./fixtures/mprotect_noaccess'))
 
@@ -15,7 +14,7 @@ test('sodium_mprotect_noaccess', { skip: isBare }, function (t) {
   })
 })
 
-test('sodium_mprotect_readonly', { skip: isBare }, function (t) {
+test('sodium_mprotect_readonly', function (t) {
   t.plan(2)
   const p = fork(require.resolve('./fixtures/mprotect_readonly'))
 
@@ -27,7 +26,7 @@ test('sodium_mprotect_readonly', { skip: isBare }, function (t) {
   })
 })
 
-test('sodium_mprotect_readwrite', { skip: isBare }, function (t) {
+test('sodium_mprotect_readwrite', function (t) {
   t.plan(4)
   const p = fork(require.resolve('./fixtures/mprotect_readwrite'))
 
@@ -131,4 +130,16 @@ test.skip('sodium_malloc bounds', function (t) {
   t.throws(function () {
     sodium.sodium_malloc(Number.MAX_SAFE_INTEGER)
   }, 'too large')
+})
+
+test.solo('sodium mprotect 2', function (t) {
+  const b = sodium.sodium_malloc(1024)
+  sodium.sodium_mprotect_readwrite(b)
+  sodium.sodium_memzero(b)
+
+  sodium.sodium_mprotect_noaccess(b)
+  sodium.sodium_mprotect_readwrite(b)
+  sodium.sodium_mprotect_noaccess(b)
+
+  sodium.sodium_free(b)
 })

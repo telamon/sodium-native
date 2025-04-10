@@ -10,6 +10,7 @@
 #include "extensions/tweak/tweak.h"
 #include "extensions/pbkdf2/pbkdf2.h"
 
+/* @deprecated */
 static uint8_t typedarray_width (js_typedarray_type_t type) {
   switch (type) {
     case js_int8array: return 1;
@@ -74,12 +75,12 @@ sn_sodium_free (js_env_t *env, js_callback_info_t *info) {
   js_value_t *array_buf;
   SN_STATUS_THROWS(js_get_named_property(env, argv[0], "buffer", &array_buf), "failed to get arraybuffer");
 
-  SN_STATUS_THROWS(js_detach_arraybuffer(env, array_buf), "failed to detach array buffer");
-
   void *ptr;
-  err = js_remove_wrap(env, array_buf, &ptr);
-  assert(err == 0);
-  assert(ptr == buf_data);
+  SN_STATUS_THROWS(js_remove_wrap(env, array_buf, &ptr), "failed to remove wrap");
+  assert(ptr == buf_data && "unexpected wrapped value");
+  SN_THROWS(ptr != buf_data, "unexpected memory address");
+
+  SN_STATUS_THROWS(js_detach_arraybuffer(env, array_buf), "failed to detach array buffer");
 
   sodium_free(buf_data);
 
@@ -103,7 +104,6 @@ sn_sodium_malloc (js_env_t *env, js_callback_info_t *info) {
   js_value_t *buffer;
 
   SN_STATUS_THROWS(js_create_external_arraybuffer(env, ptr, size, NULL, NULL, &buffer), "failed to create a native arraybuffer")
-
 
   js_value_t *value;
   SN_STATUS_THROWS(js_get_boolean(env, true, &value), "failed to create boolean")
